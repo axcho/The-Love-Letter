@@ -33,7 +33,7 @@ package org.flixel.plugin.axcho
 			return (Expression1 || Expression2);
 		}
 		
-		static public function equal(Expression1:Object, Expression2:Object):Boolean
+		static public function same(Expression1:Object, Expression2:Object):Boolean
 		{
 			// return equality for script
 			return (Expression1 == Expression2);
@@ -41,13 +41,13 @@ package org.flixel.plugin.axcho
 		
 		static public function bigger(Expression1:Number, Expression2:Number):Boolean
 		{
-			// return equality for script
+			// return greater than for script
 			return (Expression1 > Expression2);
 		}
 		
 		static public function smaller(Expression1:Number, Expression2:Number):Boolean
 		{
-			// return equality for script
+			// return less than for script
 			return (Expression1 < Expression2);
 		}
 		
@@ -583,6 +583,9 @@ package org.flixel.plugin.axcho
 						{
 							// save the object as a parameter
 							functionParameters.push(object);
+							
+							// reset the object
+							object = undefined;
 						}
 					}
 				}
@@ -670,16 +673,25 @@ package org.flixel.plugin.axcho
 					// if the value is a function
 					else if (value is Function)
 					{
-						// save the old function object
-						functionObjectStack.push(functionObject);
-						functionParametersStack.push(functionParameters);
-						
-						// save the value as the new function object
-						functionObject = value;
-						functionParameters = new Array();
-						
-						// reset the object
-						object = undefined;
+						// if function takes no parameters
+						if ((value as Function).length == 0)
+						{
+							// call the function and save the result as the object
+							object = (value as Function).apply(null, null);
+						}
+						else
+						{
+							// save the old function object
+							functionObjectStack.push(functionObject);
+							functionParametersStack.push(functionParameters);
+							
+							// save the value as the new function object
+							functionObject = value;
+							functionParameters = new Array();
+							
+							// reset the object
+							object = undefined;
+						}
 					}
 					// if the value is an object
 					else if (value is Object)
@@ -713,8 +725,12 @@ package org.flixel.plugin.axcho
 				functionObject = functionObjectStack.pop();
 				functionParameters = functionParametersStack.pop();
 				
-				// save the object as a parameter
-				functionParameters.push(object);
+				// if the object is defined
+				if (object !== undefined)
+				{
+					// save the object as a parameter
+					functionParameters.push(object);
+				}
 			}
 			
 			// if should not continue no matter what
